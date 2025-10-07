@@ -1,6 +1,6 @@
-# 🤖 LavandaioBot
+# 🤖 LaundryBot
 
-LavandaioBot is a Telegram bot designed to manage **laundry bookings** easily and automatically.  
+Laundry is a Telegram bot designed to manage **laundry bookings** easily and automatically.  
 It allows users to book, view, and cancel their time slots directly via Telegram.
 
 ---
@@ -26,3 +26,4 @@ It allows users to book, view, and cancel their time slots directly via Telegram
 git clone https://github.com/<your-username>/LavandaioBot.git
 cd LavandaioBot
 pip install -r requirements.txt
+

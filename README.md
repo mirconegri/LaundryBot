@@ -8,6 +8,18 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 ---
 
+## 📸 Before & After
+
+**Before LaundryBot**  
+_Manual booking with paper notes and group messages_  
+![Before](images/before.png)
+
+**After LaundryBot**  
+_Users book washing machines and dryers directly via Telegram_  
+![After](images/after.png)
+
+---
+
 ## 🚀 Features
 - 📅 View available time slots
 - ✅ Book a laundry slot
@@ -31,4 +43,5 @@ cd LaundryBot
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
 

@@ -8,6 +8,11 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 ---
 
+
+
+
+## 📸 Before & After
+
 <table>
   <tr>
     <td align="center">
@@ -26,17 +31,6 @@ So I programmed this bot to **make the process simpler and automated**, allowing
       <img src="images/after.png" width="300">
       </td>
 </table>
-
-
-## 📸 Before & After
-
-**Before LaundryBot**  
-_Manual booking with paper notes and group messages_  
-<img src="images/before.png" width="300" />
-
-**After LaundryBot**  
-_Users book washing machines and dryers directly via Telegram_  
-<img src="images/after.png" width="300" />
 
 ---
  
@@ -68,6 +62,7 @@ cp config.example.py config.py
 Edit config.py and add your Telegram bot token.
 Run the bot:
 python app.py
+
 
 
 

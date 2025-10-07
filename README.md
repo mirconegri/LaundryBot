@@ -17,7 +17,7 @@ So I programmed this bot to **make the process simpler and automated**, allowing
   <tr>
     <td align="center">
       <b>Before LaundryBot</b><br>
-      <i>Manual booking with a lot of messages </i>  <br>
+      <i>All bookings were done manually using many messages and notes</i>  <br>
     </td>
     <td align="center">
       <b>After LaundryBot</b><br>
@@ -62,6 +62,7 @@ cp config.example.py config.py
 Edit config.py and add your Telegram bot token.
 Run the bot:
 python app.py
+
 
 
 

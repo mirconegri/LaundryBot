@@ -11,7 +11,7 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 
 
-## 📸 Before & After
+<p align="center"> ## 📸 Before & After </p>
 
 <table>
   <tr>
@@ -62,6 +62,7 @@ cp config.example.py config.py
 Edit config.py and add your Telegram bot token.
 Run the bot:
 python app.py
+
 
 
 

@@ -12,12 +12,11 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 **Before LaundryBot**  
 _Manual booking with paper notes and group messages_  
-![Before](  <img src="images/before.png" width="300" />
-)
+<img src="images/before.png" width="300" />
 
 **After LaundryBot**  
 _Users book washing machines and dryers directly via Telegram_  
-![After](  <img src="images/after.png" width="300" />)
+<img src="images/after.png" width="300" />
 
 ---
  
@@ -49,5 +48,6 @@ cp config.example.py config.py
 Edit config.py and add your Telegram bot token.
 Run the bot:
 python app.py
+
 
 

@@ -43,5 +43,8 @@ cd LaundryBot
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-
+Copy the example config:
+cp config.example.py config.py
+Edit config.py and add your Telegram bot token.
+Run the bot:
+python app.py

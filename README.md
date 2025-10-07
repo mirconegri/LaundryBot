@@ -11,10 +11,12 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 <table>
   <tr>
     <td align="center">
-      <b>Before LaundryBot</b><br>
+      <b>Before LaundryBot</b>
+      _Manual booking with paper notes and group messages_  <br>
     </td>
     <td align="center">
-      <b>After LaundryBot</b><br>
+      <b>After LaundryBot</b>
+      _Users book washing machines and dryers directly via Telegram_  <br>
     </td>
   </tr>  
       <td align="center">
@@ -66,6 +68,7 @@ cp config.example.py config.py
 Edit config.py and add your Telegram bot token.
 Run the bot:
 python app.py
+
 
 
 

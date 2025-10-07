@@ -12,19 +12,15 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 **Before LaundryBot**  
 _Manual booking with paper notes and group messages_  
-![Before](images/before.png)
+![Before](  <img src="images/before.png" width="300" />
+)
 
 **After LaundryBot**  
 _Users book washing machines and dryers directly via Telegram_  
-![After](images/after.png)
+![After](  <img src="images/after.png" width="300" />)
 
-
-<p float="left">
-  <img src="images/before.png" width="300" />
-  <img src="images/after.png" width="300" />
-</p>
 ---
-
+ 
 ## 🚀 Features
 - 📅 View available time slots
 - ✅ Book a laundry slot
@@ -53,4 +49,5 @@ cp config.example.py config.py
 Edit config.py and add your Telegram bot token.
 Run the bot:
 python app.py
+
 

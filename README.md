@@ -62,9 +62,12 @@ cp config.example.py config.py
 Edit config.py and add your Telegram bot token.
 Run the bot:
 python app.py
+```
+---
 
+📄 License
 
-
+MIT License © 2025 Mirco Negri
 
 
 

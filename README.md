@@ -50,7 +50,7 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Installation (Win Terminal)
 ```bash
 git clone https://github.com/mirconegri/LaundryBot.git
 cd LaundryBot
@@ -62,6 +62,7 @@ cp config.example.py config.py
 Edit config.py and add your Telegram bot token.
 Run the bot:
 python app.py
+
 
 
 

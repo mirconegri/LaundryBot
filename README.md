@@ -52,27 +52,29 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 ## ⚙️ Installation (Win Terminal)
 
-### Clone the repository
+### 1️⃣Clone the repository
 ```
 git clone https://github.com/mirconegri/LaundryBot.git
 cd LaundryBot
 ```
-### Create a virtual environment
+### 2️⃣Create a virtual environment
 ```
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
-### Install dependencies
+### 3️⃣Install dependencies
 ```
 pip install -r requirements.txt
 ```
-### Configure the bot
+### 4️⃣Configure the bot
 Copy the example config:
 ```
 cp config.example.py config.py
 ```
-Edit config.py and add your 'Telegram bot token'.
-Run the bot:
+Edit config.py and add your 
+`Telegram bot token`.
+### 5️⃣Run the bot:
+```
 python app.py
 ```
 ---
@@ -80,6 +82,7 @@ python app.py
 ## 📄 License
 
 MIT License © 2025 Mirco Negri
+
 
 
 

@@ -92,9 +92,10 @@ User commands on Telegram:
 
 ---
 
-## 📄 License
+## 📜 License
 
 MIT License © 2025 Mirco Negri
+
 
 
 

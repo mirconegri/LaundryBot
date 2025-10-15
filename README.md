@@ -13,7 +13,7 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 <h2 align="center"> 📸 Before & After </h2>
 
-<table>
+<table align="center">
   <tr>
     <td align="center">
       <b>Before LaundryBot</b><br>
@@ -95,6 +95,7 @@ User commands on Telegram:
 ## 📜 License
 
 MIT License © 2025 Mirco Negri
+
 
 
 

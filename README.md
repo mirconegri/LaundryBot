@@ -79,9 +79,23 @@ python app.py
 ```
 ---
 
+## 🧾 Example Usage
+
+User commands on Telegram:
+
+- `/start`
+- `/book`
+- `/view`
+- `/cancel`
+- `/help`
+
+
+---
+
 ## 📄 License
 
 MIT License © 2025 Mirco Negri
+
 
 
 

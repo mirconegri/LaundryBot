@@ -1,5 +1,7 @@
 # 🧺 LaundryBot
 
+![PDF Merge](https://img.shields.io/badge/Language-python-blue?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
 LaundryBot is a Telegram bot that allows users to **manage laundry bookings** easily.  
 
 I created this bot because in the student dormitory where I live in Trento, there is **no program to manage laundry reservations**. Every time someone wanted to book a washing machine or dryer, we had to manually write down who was using which machine.  
@@ -95,6 +97,7 @@ User commands on Telegram:
 ## 📜 License
 
 MIT License © 2025 Mirco Negri
+
 
 
 

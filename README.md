@@ -94,9 +94,17 @@ User commands on Telegram:
 
 ---
 
+## 👤 Author
+
+`Mirco Negri`
+GitHub: https://github.com/mirconegri
+
+---
+
 ## 📜 License
 
 MIT License © 2025 Mirco Negri
+
 
 
 

@@ -46,7 +46,7 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 ## 🛠️ Technologies
 - Python 3.10+
-- [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)
+- Python telegram bot
 - Flask (optional web integration)
 - JSON for local data storage
 
@@ -104,6 +104,7 @@ GitHub: https://github.com/mirconegri
 ## 📜 License
 
 MIT License © 2025 Mirco Negri
+
 
 
 

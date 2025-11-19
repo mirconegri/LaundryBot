@@ -45,10 +45,10 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 ---
 
 ## 🛠️ Technologies
-- Python 3.10+
-- Python telegram bot
-- Flask (optional web integration)
-- JSON for local data storage
+- `Python 3.10+`
+- `Python telegram bot`
+- `Flask (optional web integration)`
+- `JSON` for local data storage
 
 ---
 

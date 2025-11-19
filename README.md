@@ -37,10 +37,10 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 ---
  
 ## 🚀 Features
-- 📅 View available time slots
-- ✅ Book a laundry slot
-- 🗑️ Cancel or update a booking
-- 💾 Store data locally using JSON
+- 📅 `View` available time slots
+- ✅ `Book` a laundry slot
+- 🗑️ `Cancel` or update a booking
+- 💾 `Store` data locally using JSON
 
 ---
 
@@ -96,7 +96,7 @@ User commands on Telegram:
 
 ## 📜 License
 
-MIT License © 2025 Mirco Negri
+MIT License © 2025 `Mirco Negri`
 — see [LICENSE](LICENSE) file for details.
 
 ---

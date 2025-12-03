@@ -10,9 +10,7 @@ So I programmed this bot to **make the process simpler and automated**, allowing
 
 ---
 
-
-
-
+
 <h2 align="center"> 📸 Before & After </h2>
 
 <table align="center">

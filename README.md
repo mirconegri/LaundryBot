@@ -8,8 +8,10 @@ I created this bot because in the student dormitory where I live in Trento, ther
 
 So I programmed this bot to **make the process simpler and automated**, allowing residents to book machines directly via Telegram.
 
----
-
+---
+
+
+
 <h2 align="center"> 📸 Before & After </h2>
 
 <table align="center">
@@ -103,7 +105,9 @@ MIT License © 2025 `Mirco Negri`
 `Mirco Negri`
 GitHub: https://github.com/mirconegri
 
-
+
+
+
 
 
 

@@ -86,8 +86,7 @@ User commands on Telegram:
 - `/book`
 - `/view`
 - `/cancel`
-- `/help`
-
+- `/help`
 
 ---
 

@@ -1,6 +1,6 @@
 # 🧺 LaundryBot
 
-[![Stocazzo](https://img.shields.io/badge/Language-python-blue?style=for-the-badge)](https://www.python.org/) [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE) 
+[![](https://img.shields.io/badge/Language-python-blue?style=for-the-badge)](https://www.python.org/) [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE) 
 
 LaundryBot is a Telegram bot that allows users to **manage laundry bookings** easily.  
 

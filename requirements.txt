@@ -1,2 +1,8 @@
+# python-telegram-bot: La libreria principale per interfacciarsi con le API di Telegram.
+# Gestisce l'invio/ricezione dei messaggi, i comandi (come /book) e i menu a bottoni.
 python-telegram-bot==21.3
-Flask==3.0.3
+
+# Flask: Un micro-framework web per Python. 
+# Utilizzato per creare un server web leggero, utile per gestire i Webhook 
+# o per mantenere il bot attivo su piattaforme di hosting (es. Render, Heroku).
+Flask==3.0.3

@@ -3,11 +3,12 @@
 
 import logging
 import asyncio
+import json
+import os
 import sys
+from datetime import datetime, timedelta
 
 # ---------------- CONFIGURATION CHECK ----------------
-# The bot requires a 'config.py' file containing your BOT_TOKEN.
-# If it's missing, the program exits with an error message.
 try:
     import config
 except ModuleNotFoundError:
@@ -15,8 +16,7 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 # ---------------- TELEGRAM IMPORTS ----------------
-# Core classes and handlers from python-telegram-bot
-from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
+from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from telegram.ext import (
     ApplicationBuilder,
     ContextTypes,
@@ -27,186 +27,320 @@ from telegram.ext import (
 )
 
 # ---------------- LOGGING ----------------
-# Enables detailed logging for debugging and monitoring.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+logger = logging.getLogger(__name__)
 
 # ---------------- CONVERSATION STATES ----------------
-# Each state represents a step in the user conversation.
-CHOOSE_TYPE, CHOOSE_MACHINE, DURATION, EMPTY_MACHINE = range(4)
+# Booking flow states
+CHOOSE_TYPE, CHOOSE_MACHINE, DURATION = range(3)
+# Empty/free flow state (separate namespace to avoid conflicts)
+EMPTY_CHOOSE_MACHINE = 3
 
 # ---------------- MACHINE DATA ----------------
-# Lists of available machines.
 washing_machines = ["A", "B", "C", "D", "E"]
 dryers = ["1", "2", "3", "4"]
 
-# Dictionary to store current bookings.
-# Structure: {machine_name: {"user": username, "end_time": timestamp}}
+# Bookings dictionary.
+# Structure: {machine_name: {"user": username, "end_time": iso_string, "minutes": int}}
 bookings = {}
 
-# ---------------- HELPER FUNCTION ----------------
-def available_machines(machine_type):
-    """
-    Returns a list of available machines of a given type.
-    machine_type: 'washing' or 'dryer'
-    """
-    available = []
-    if machine_type == "washing":
-        for m in washing_machines:
-            if m not in bookings:
-                available.append(m)
-    else:
-        for d in dryers:
-            if d not in bookings:
-                available.append(d)
-    return available
+# ---------------- PERSISTENCE ----------------
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+BOOKINGS_FILE = os.path.join(DATA_DIR, "bookings.json")
 
-# ---------------- COMMAND HANDLERS ----------------
 
-# /start — Entry point of the conversation.
-# Asks the user whether they want to book a washing machine or a dryer.
+def load_bookings():
+    """Load bookings from JSON file, discarding expired ones."""
+    global bookings
+    os.makedirs(DATA_DIR, exist_ok=True)
+    if not os.path.exists(BOOKINGS_FILE):
+        bookings = {}
+        return
+    try:
+        with open(BOOKINGS_FILE, "r") as f:
+            raw = json.load(f)
+        now = datetime.utcnow()
+        # Filter out expired bookings
+        bookings = {
+            machine: data
+            for machine, data in raw.items()
+            if datetime.fromisoformat(data["end_time"]) > now
+        }
+        logger.info(f"Loaded {len(bookings)} active booking(s) from disk.")
+    except (json.JSONDecodeError, KeyError, ValueError):
+        logger.warning("Could not parse bookings.json, starting fresh.")
+        bookings = {}
+
+
+def save_bookings():
+    """Persist current bookings to JSON file."""
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(BOOKINGS_FILE, "w") as f:
+        json.dump(bookings, f, indent=2)
+
+
+# ---------------- HELPER FUNCTIONS ----------------
+
+def available_machines(machine_type: str) -> list[str]:
+    """Return machines of the given type that are not currently booked."""
+    pool = washing_machines if machine_type == "washing" else dryers
+    return [m for m in pool if m not in bookings]
+
+
+def booked_machines(machine_type: str) -> list[str]:
+    """Return machines of the given type that are currently booked."""
+    pool = washing_machines if machine_type == "washing" else dryers
+    return [m for m in pool if m in bookings]
+
+
+def format_booking_list() -> str:
+    """Return a human-readable summary of all active bookings."""
+    if not bookings:
+        return "Nessuna prenotazione attiva. ✅"
+    lines = ["📋 *Prenotazioni attive:*\n"]
+    for machine, data in bookings.items():
+        end_dt = datetime.fromisoformat(data["end_time"])
+        # Show remaining minutes
+        remaining = max(0, int((end_dt - datetime.utcnow()).total_seconds() / 60))
+        label = "🫧 Lavatrice" if machine in washing_machines else "🌀 Asciugatrice"
+        lines.append(
+            f"{label} *{machine}* — {data['user']} — ancora ~{remaining} min"
+        )
+    return "\n".join(lines)
+
+
+# ---------------- COMMAND: /start (booking flow) ----------------
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[KeyboardButton("Washing Machine")], [KeyboardButton("Dryer")]]
+    """Entry point: ask the user whether they want to book a washer or dryer."""
+    keyboard = [[KeyboardButton("🫧 Lavatrice"), KeyboardButton("🌀 Asciugatrice")]]
     await update.message.reply_text(
-        "Welcome! Do you want to book a washing machine or a dryer?",
-        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
+        "👋 Benvenuto su *LaundryBot*!\n\nCosa vuoi prenotare?",
+        parse_mode="Markdown",
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True),
     )
     return CHOOSE_TYPE
 
-# Step 1: Handle machine type choice (washing machine or dryer)
-async def choose_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    choice = update.message.text.lower()
 
-    # Validate input
-    if choice not in ["washing machine", "dryer"]:
-        await update.message.reply_text("Please choose between Washing Machine or Dryer.")
+async def choose_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle machine-type choice."""
+    text = update.message.text.strip()
+
+    if "lavatrice" in text.lower():
+        machine_type = "washing"
+        label = "lavatrice"
+    elif "asciugatrice" in text.lower():
+        machine_type = "dryer"
+        label = "asciugatrice"
+    else:
+        await update.message.reply_text("Per favore scegli *Lavatrice* o *Asciugatrice*.", parse_mode="Markdown")
         return CHOOSE_TYPE
 
-    # Save the chosen type to user data
-    context.user_data['type'] = "washing" if choice == "washing machine" else "dryer"
+    context.user_data["type"] = machine_type
 
-    # Get available machines of that type
-    machines = available_machines(context.user_data['type'])
-
-    # If all machines are booked, end the conversation
+    machines = available_machines(machine_type)
     if not machines:
-        await update.message.reply_text(f"All {choice}s are currently booked.")
+        await update.message.reply_text(
+            f"😕 Tutte le {label}e sono attualmente occupate.",
+            reply_markup=ReplyKeyboardRemove(),
+        )
         return ConversationHandler.END
 
-    # Otherwise, display available machines
     keyboard = [[KeyboardButton(m)] for m in machines]
     await update.message.reply_text(
-        f"Choose which {choice} to book:",
-        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
+        f"Quale {label} vuoi prenotare?",
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True),
     )
     return CHOOSE_MACHINE
 
-# Step 2: Handle machine selection
+
 async def choose_machine(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    machine = update.message.text
-    m_type = context.user_data['type']
+    """Handle specific machine selection."""
+    machine = update.message.text.strip()
+    m_type = context.user_data.get("type", "washing")
     valid = washing_machines if m_type == "washing" else dryers
 
-    # Validate machine name
     if machine not in valid:
-        await update.message.reply_text("Invalid selection. Please choose again.")
+        await update.message.reply_text("⚠️ Selezione non valida. Riprova.")
         return CHOOSE_MACHINE
 
-    # Save the selected machine to user data
-    context.user_data['machine'] = machine
-    await update.message.reply_text("For how long will you use it? (in minutes)")
+    if machine in bookings:
+        await update.message.reply_text(
+            f"⚠️ La macchina *{machine}* è già prenotata. Scegline un'altra.",
+            parse_mode="Markdown",
+        )
+        return CHOOSE_MACHINE
+
+    context.user_data["machine"] = machine
+    await update.message.reply_text(
+        "⏱ Per quanti minuti la userai?",
+        reply_markup=ReplyKeyboardRemove(),
+    )
     return DURATION
 
-# Step 3: Handle booking duration
+
 async def duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle booking duration and confirm."""
     try:
-        # Validate that the duration is a positive integer
-        minutes = int(update.message.text)
+        minutes = int(update.message.text.strip())
         if minutes <= 0:
             raise ValueError
     except ValueError:
-        await update.message.reply_text("Please enter a valid number of minutes.")
+        await update.message.reply_text("⚠️ Inserisci un numero intero positivo di minuti.")
         return DURATION
 
-    # Retrieve user and machine info
-    machine = context.user_data['machine']
+    machine = context.user_data["machine"]
     user = update.message.from_user.username or update.message.from_user.first_name
 
-    # Compute end time using asyncio's event loop clock
-    end_time = asyncio.get_event_loop().time() + minutes * 60
-    bookings[machine] = {"user": user, "end_time": end_time}
+    end_time = datetime.utcnow() + timedelta(minutes=minutes)
+    bookings[machine] = {
+        "user": user,
+        "end_time": end_time.isoformat(),
+        "minutes": minutes,
+    }
+    save_bookings()
 
-    # Confirm booking
-    await update.message.reply_text(f"{machine} has been booked by {user} for {minutes} minutes.")
+    await update.message.reply_text(
+        f"✅ *{machine}* prenotata da *{user}* per *{minutes}* minuti.\n"
+        f"Libera alle {(datetime.now() + timedelta(minutes=minutes)).strftime('%H:%M')} circa.",
+        parse_mode="Markdown",
+        reply_markup=ReplyKeyboardRemove(),
+    )
 
-    # Schedule an automatic release of the machine when time expires
+    # Schedule automatic release
     asyncio.create_task(release_machine(machine, minutes))
     return ConversationHandler.END
 
-# Helper function — Releases the machine automatically after the booking duration ends
-async def release_machine(machine, minutes):
+
+async def release_machine(machine: str, minutes: int):
+    """Release a machine automatically after its booking expires."""
     await asyncio.sleep(minutes * 60)
     if machine in bookings:
         del bookings[machine]
-        logging.info(f"{machine} released automatically after {minutes} minutes.")
+        save_bookings()
+        logger.info(f"Machine {machine} released automatically after {minutes} minutes.")
 
-# ---------------- EMPTY MACHINE COMMAND ----------------
 
-# /empty — Allows users to manually free a machine
-async def empty(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[KeyboardButton("Empty")], [KeyboardButton("I emptied it")]]
+# ---------------- COMMAND: /view ----------------
+
+async def view(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show all active bookings."""
     await update.message.reply_text(
-        "Report the status of the machine:",
-        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
+        format_booking_list(),
+        parse_mode="Markdown",
+        reply_markup=ReplyKeyboardRemove(),
     )
-    return EMPTY_MACHINE
 
-# Step for handling manual emptying
-async def handle_empty(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    choice = update.message.text.lower()
 
-    if choice in ["empty", "i emptied it"]:
-        # If there are active bookings, remove the latest one
-        if bookings:
-            machine, _ = bookings.popitem()
-            await update.message.reply_text(f"{machine} has been freed.")
-        else:
-            await update.message.reply_text("No machines are currently booked.")
-    return ConversationHandler.END
+# ---------------- COMMAND: /cancel (inside conversation) ----------------
 
-# ---------------- CANCEL COMMAND ----------------
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Operation cancelled.")
+    """Cancel the current operation."""
+    await update.message.reply_text(
+        "❌ Operazione annullata.",
+        reply_markup=ReplyKeyboardRemove(),
+    )
     return ConversationHandler.END
 
-# ---------------- MAIN FUNCTION ----------------
-if __name__ == '__main__':
+
+# ---------------- COMMAND: /free — manually free a specific machine ----------------
+
+async def free_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Ask which booked machine to free."""
+    all_booked = [m for m in bookings]
+    if not all_booked:
+        await update.message.reply_text(
+            "ℹ️ Non ci sono macchine prenotate al momento.",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        return ConversationHandler.END
+
+    keyboard = [[KeyboardButton(m)] for m in all_booked]
+    await update.message.reply_text(
+        "🗑 Quale macchina vuoi liberare?",
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True),
+    )
+    return EMPTY_CHOOSE_MACHINE
+
+
+async def free_choose_machine(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Free the chosen machine."""
+    machine = update.message.text.strip()
+    if machine not in bookings:
+        await update.message.reply_text(
+            f"⚠️ *{machine}* non risulta prenotata.",
+            parse_mode="Markdown",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        return ConversationHandler.END
+
+    booked_by = bookings[machine]["user"]
+    del bookings[machine]
+    save_bookings()
+
+    await update.message.reply_text(
+        f"✅ Macchina *{machine}* liberata (era prenotata da {booked_by}).",
+        parse_mode="Markdown",
+        reply_markup=ReplyKeyboardRemove(),
+    )
+    return ConversationHandler.END
+
+
+# ---------------- COMMAND: /help ----------------
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Send a help message."""
+    text = (
+        "🤖 *LaundryBot — Comandi disponibili*\n\n"
+        "/start — Prenota una lavatrice o asciugatrice\n"
+        "/view — Visualizza le prenotazioni attive\n"
+        "/free — Libera manualmente una macchina\n"
+        "/cancel — Annulla l'operazione corrente\n"
+        "/help — Mostra questo messaggio\n"
+    )
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+
+# ---------------- MAIN ----------------
+
+if __name__ == "__main__":
     import platform
 
-    # Fix for Windows asyncio compatibility issues
     if platform.system() == "Windows":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    # Create the main bot application
+    # Load persisted bookings on startup
+    load_bookings()
+
     app = ApplicationBuilder().token(config.BOT_TOKEN).build()
 
-    # Define the conversation flow
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start), CommandHandler('empty', empty)],
+    # --- Booking conversation ---
+    booking_handler = ConversationHandler(
+        entry_points=[CommandHandler("start", start)],
         states={
             CHOOSE_TYPE: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_type)],
             CHOOSE_MACHINE: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_machine)],
             DURATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, duration)],
-            EMPTY_MACHINE: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_empty)]
         },
-        fallbacks=[CommandHandler('cancel', cancel)]
+        fallbacks=[CommandHandler("cancel", cancel)],
     )
 
-    # Add the conversation handler to the bot
-    app.add_handler(conv_handler)
+    # --- Free/empty conversation ---
+    free_handler = ConversationHandler(
+        entry_points=[CommandHandler("free", free_start)],
+        states={
+            EMPTY_CHOOSE_MACHINE: [MessageHandler(filters.TEXT & ~filters.COMMAND, free_choose_machine)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
 
-    # Start the bot
+    app.add_handler(booking_handler)
+    app.add_handler(free_handler)
+    app.add_handler(CommandHandler("view", view))
+    app.add_handler(CommandHandler("help", help_command))
+
     print("🤖 LaundryBot is running...")
     app.run_polling()

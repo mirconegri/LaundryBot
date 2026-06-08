@@ -1,6 +1,6 @@
 # python-telegram-bot: Core library for the Telegram Bot API.
 # Version 21.x uses asyncio natively (PTB v20+).
-python-telegram-bot==22.0
+python-telegram-bot>=22.0
 
 # Flask: Lightweight web framework.
 # Useful if you want to add a web dashboard or run the bot via webhooks

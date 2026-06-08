@@ -1,4 +1,11 @@
-# python-telegram-bot: La libreria principale per interfacciarsi con le API di Telegram.
+# python-telegram-bot: Core library for the Telegram Bot API.
+# Version 21.x uses asyncio natively (PTB v20+).
+python-telegram-bot==21.3
+
+# Flask: Lightweight web framework.
+# Useful if you want to add a web dashboard or run the bot via webhooks
+# on hosting platforms (Render, Railway, Heroku, etc.).
+Flask==3.0.3# python-telegram-bot: La libreria principale per interfacciarsi con le API di Telegram.
 # Gestisce l'invio/ricezione dei messaggi, i comandi (come /book) e i menu a bottoni.
 python-telegram-bot==21.3
 
